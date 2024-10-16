@@ -4,6 +4,7 @@ import { Image as ImageIcon, LogIn } from 'lucide-react';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../firebase';
 import ProgressiveImage from './ProgressiveImage';
+import PhotoModal from './PhotoModal';
 
 interface Photo {
   id: string;
@@ -15,6 +16,7 @@ interface Photo {
 function PublicGallery() {
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
 
   useEffect(() => {
     const fetchPhotos = async () => {
@@ -32,6 +34,10 @@ function PublicGallery() {
   }, []);
 
   const categories = ['Ceremonia', 'Fiesta', 'Invitados', 'Detalles', 'Sin categoría'];
+
+  const filteredPhotos = selectedCategory
+    ? photos.filter(photo => photo.category === selectedCategory)
+    : photos;
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -74,25 +80,33 @@ function PublicGallery() {
             ))}
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            {photos
-              .filter(photo => !selectedCategory || photo.category === selectedCategory)
-              .map((photo) => (
-                <div 
-                  key={photo.id} 
-                  className="bg-white rounded-lg shadow-md overflow-hidden"
-                >
-                  <ProgressiveImage
-                    src={photo.url}
-                    placeholder={photo.thumbnailUrl || photo.url}
-                    alt="Foto de boda"
-                    className="w-full h-64 object-cover"
-                  />
-                  <div className="p-2 text-sm text-gray-600">{photo.category}</div>
-                </div>
-              ))}
+            {filteredPhotos.map((photo) => (
+              <div 
+                key={photo.id} 
+                className="bg-white rounded-lg shadow-md overflow-hidden cursor-pointer"
+                onClick={() => setSelectedPhoto(photo)}
+              >
+                <ProgressiveImage
+                  src={photo.url}
+                  placeholder={photo.thumbnailUrl || photo.url}
+                  alt="Foto de boda"
+                  className="w-full h-64 object-cover"
+                />
+                <div className="p-2 text-sm text-gray-600">{photo.category}</div>
+              </div>
+            ))}
           </div>
         </div>
       </main>
+      {selectedPhoto && (
+        <PhotoModal 
+          photo={selectedPhoto} 
+          onClose={() => setSelectedPhoto(null)}
+          photos={filteredPhotos}
+          onDeletePhoto={() => {}}
+          isPublic={true}
+        />
+      )}
     </div>
   );
 }

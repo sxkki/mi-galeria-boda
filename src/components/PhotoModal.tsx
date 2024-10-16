@@ -12,9 +12,10 @@ interface PhotoModalProps {
   onClose: () => void;
   photos: Photo[];
   onDeletePhoto: (photoId: string) => void;
+  isPublic?: boolean;
 }
 
-const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose, photos, onDeletePhoto }) => {
+const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose, photos, onDeletePhoto, isPublic = false }) => {
   const [currentPhoto, setCurrentPhoto] = useState(photo);
   const [zoomLevel, setZoomLevel] = useState(1);
 
@@ -41,11 +42,13 @@ const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose, photos, onDelet
   };
 
   const handleDelete = () => {
-    onDeletePhoto(currentPhoto.id);
-    if (photos.length > 1) {
-      navigatePhoto(1);
-    } else {
-      onClose();
+    if (!isPublic) {
+      onDeletePhoto(currentPhoto.id);
+      if (photos.length > 1) {
+        navigatePhoto(1);
+      } else {
+        onClose();
+      }
     }
   };
 
@@ -68,9 +71,11 @@ const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose, photos, onDelet
           <button onClick={() => handleZoom(-0.1)} className="bg-white rounded-full p-2">
             <ZoomOut size={20} />
           </button>
-          <button onClick={handleDelete} className="bg-red-500 text-white rounded-full p-2">
-            <Trash2 size={20} />
-          </button>
+          {!isPublic && (
+            <button onClick={handleDelete} className="bg-red-500 text-white rounded-full p-2">
+              <Trash2 size={20} />
+            </button>
+          )}
         </div>
         <img 
           src={currentPhoto.url} 
